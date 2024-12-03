@@ -10,9 +10,9 @@ import argparse
 import numpy as np
 
 # Paths
-TRAIN_DIR = r"C:\Users\tomas\Desktop\SI\projeto\covid_dataset\train"
-EVAL_DIR = r"C:\Users\tomas\Desktop\SI\projeto\evaluation_Set"
-RESULT_FILE = r"C:\Users\tomas\Desktop\SI\projeto\result.txt"
+TRAIN_DIR = r"..\covid_dataset\train"
+EVAL_DIR = r"..\evaluation_Set"
+RESULT_FILE = r"..\result.txt"
 
 # Check for GPU
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
