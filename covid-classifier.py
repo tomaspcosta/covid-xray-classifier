@@ -9,10 +9,19 @@ from PIL import Image
 import argparse
 import numpy as np
 
-# Paths
-TRAIN_DIR = r"..\covid_dataset\train"
-EVAL_DIR = r"..\evaluation_Set"
-RESULT_FILE = r"..\result.txt"
+# Base directory of the project (where the script resides)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Construct paths relative to BASE_DIR
+TRAIN_DIR = os.path.join(BASE_DIR, 'covid_dataset', 'train')
+EVAL_DIR = os.path.join(BASE_DIR, 'evaluation_Set')
+RESULT_FILE = os.path.join(BASE_DIR, 'result.txt')
+
+# Check if required directories exist
+if not os.path.exists(TRAIN_DIR):
+    raise FileNotFoundError(f"Training directory not found: {TRAIN_DIR}")
+if not os.path.exists(EVAL_DIR):
+    raise FileNotFoundError(f"Evaluation directory not found: {EVAL_DIR}")
 
 # Check for GPU
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
