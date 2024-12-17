@@ -37,7 +37,7 @@ transform = transforms.Compose([
 train_data = datasets.ImageFolder(TRAIN_DIR, transform=transform)
 
 # Split into Train and Validation sets
-train_size = int(0.8 * len(train_data))
+train_size = int(0.9 * len(train_data))
 val_size = len(train_data) - train_size
 train_dataset, val_dataset = random_split(train_data, [train_size, val_size])
 
