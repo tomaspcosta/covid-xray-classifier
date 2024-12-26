@@ -42,7 +42,6 @@ transform = transforms.Compose([
 train_data = datasets.ImageFolder(TRAIN_DIR, transform=transform)
 
 # Split into Train and Validation sets
-<<<<<<< HEAD
 #train_size = int(0.8 * len(train_data))
 #val_size = len(train_data) - train_size
 #train_dataset, val_dataset = random_split(train_data, [train_size, val_size])
@@ -60,11 +59,6 @@ train_indices, val_indices = train_test_split(
 # Subset datasets
 train_dataset = torch.utils.data.Subset(train_data, train_indices)
 val_dataset = torch.utils.data.Subset(train_data, val_indices)
-=======
-train_size = int(0.9 * len(train_data))
-val_size = len(train_data) - train_size
-train_dataset, val_dataset = random_split(train_data, [train_size, val_size])
->>>>>>> 5d727faa58a37cd2267a78a1524ad94e6fa1c6b9
 
 train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False)
