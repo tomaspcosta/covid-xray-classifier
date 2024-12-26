@@ -3,11 +3,14 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torchvision import datasets, transforms, models
+from torchvision.models import ResNet18_Weights
 from torch.utils.data import DataLoader, random_split
+from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1_score
 from PIL import Image
 import argparse
 import numpy as np
+import random
 
 # Base directory of the project (where the script resides)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -16,6 +19,8 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TRAIN_DIR = os.path.join(BASE_DIR, 'covid_dataset', 'train')
 EVAL_DIR = os.path.join(BASE_DIR, 'evaluation_Set')
 RESULT_FILE = os.path.join(BASE_DIR, 'result.txt')
+
+random.seed(42)
 
 # Check if required directories exist
 if not os.path.exists(TRAIN_DIR):
@@ -37,9 +42,23 @@ transform = transforms.Compose([
 train_data = datasets.ImageFolder(TRAIN_DIR, transform=transform)
 
 # Split into Train and Validation sets
-train_size = int(0.8 * len(train_data))
-val_size = len(train_data) - train_size
-train_dataset, val_dataset = random_split(train_data, [train_size, val_size])
+#train_size = int(0.8 * len(train_data))
+#val_size = len(train_data) - train_size
+#train_dataset, val_dataset = random_split(train_data, [train_size, val_size])
+
+labels = [label for _, label in train_data]
+
+# Perform stratified split
+train_indices, val_indices = train_test_split(
+    range(len(train_data)),
+    test_size=0.2, 
+    stratify=labels,  
+    random_state=42  
+)
+
+# Subset datasets
+train_dataset = torch.utils.data.Subset(train_data, train_indices)
+val_dataset = torch.utils.data.Subset(train_data, val_indices)
 
 train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False)
@@ -68,13 +87,13 @@ eval_dataset = EvalDataset(eval_image_paths, transform)
 eval_loader = DataLoader(eval_dataset, batch_size=1, shuffle=False)
 
 # Model: ResNet18
-model = models.resnet18(pretrained=True)
+model = models.resnet18(weights=ResNet18_Weights.DEFAULT)
 model.fc = nn.Linear(model.fc.in_features, 2)  # Modify output layer for binary classification
 model = model.to(device)
 
 # Loss and Optimizer
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
 # Training Function
 def train_model(epochs):
