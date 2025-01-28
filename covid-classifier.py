@@ -12,15 +12,20 @@ import argparse
 import numpy as np
 import random
 
-# Base directory of the project (where the script resides)
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Construct paths relative to BASE_DIR
+
 TRAIN_DIR = os.path.join(BASE_DIR, 'covid_dataset', 'train')
 EVAL_DIR = os.path.join(BASE_DIR, 'evaluation_Set')
 RESULT_FILE = os.path.join(BASE_DIR, 'result.txt')
 
 random.seed(42)
+np.random.seed(42)
+torch.manual_seed(42)
+torch.cuda.manual_seed_all(42)
+
+
 
 # Check if required directories exist
 if not os.path.exists(TRAIN_DIR):
@@ -28,27 +33,23 @@ if not os.path.exists(TRAIN_DIR):
 if not os.path.exists(EVAL_DIR):
     raise FileNotFoundError(f"Evaluation directory not found: {EVAL_DIR}")
 
-# Check for GPU
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Data Transforms
 transform = transforms.Compose([
-    transforms.Resize((224, 224)),  # Resize images to 224x224
-    transforms.ToTensor(),  # Convert to tensor
-    transforms.Normalize([0.5], [0.5])  # Normalize to [-1, 1] range
+    transforms.Resize((224, 224)), 
+    transforms.ToTensor(),
+    transforms.Normalize([0.5], [0.5]) 
 ])
 
 # Load Training Dataset
 train_data = datasets.ImageFolder(TRAIN_DIR, transform=transform)
 
-# Split into Train and Validation sets
-#train_size = int(0.8 * len(train_data))
-#val_size = len(train_data) - train_size
-#train_dataset, val_dataset = random_split(train_data, [train_size, val_size])
 
 labels = [label for _, label in train_data]
 
-# Perform stratified split
+#stratified split
 train_indices, val_indices = train_test_split(
     range(len(train_data)),
     test_size=0.2, 
@@ -88,7 +89,7 @@ eval_loader = DataLoader(eval_dataset, batch_size=1, shuffle=False)
 
 # Model: ResNet18
 model = models.resnet18(weights=ResNet18_Weights.DEFAULT)
-model.fc = nn.Linear(model.fc.in_features, 2)  # Modify output layer for binary classification
+model.fc = nn.Linear(model.fc.in_features, 2)
 model = model.to(device)
 
 # Loss and Optimizer
@@ -103,10 +104,8 @@ def train_model(epochs):
         for inputs, labels in train_loader:
             inputs, labels = inputs.to(device), labels.to(device)
 
-            # Zero gradients
             optimizer.zero_grad()
 
-            # Forward + Backward + Optimize
             outputs = model(inputs)
             loss = criterion(outputs, labels)
             loss.backward()
@@ -131,7 +130,7 @@ def validate_model():
             val_labels.extend(labels.cpu().numpy())
             val_preds.extend(preds.cpu().numpy())
 
-    # Check for class distribution in validation set
+
     unique, counts = np.unique(val_labels, return_counts=True)
     print("Class distribution in validation set:", dict(zip(unique, counts)))
 
@@ -142,7 +141,7 @@ def validate_model():
     val_f1 = f1_score(val_labels, val_preds)
     print(f"Validation F1 Score (basic): {val_f1 * 100:.4f}%")
 
-    # Weighted F1 score (if dataset is imbalanced)
+    # Weighted F1 score
     val_f1_weighted = f1_score(val_labels, val_preds, average='weighted')
     print(f"Validation Weighted F1 Score: {val_f1_weighted:.4f}")
 
@@ -158,10 +157,9 @@ def evaluate_model():
                 outputs = model(inputs)
                 _, preds = torch.max(outputs, 1)
 
-                # Write results to file
-                img_name = img_names[0]  # Batch size is 1
+                img_name = img_names[0]  
                 label = preds.item()
-                f.write(f"{img_name} {label}\n")
+                f.write(f"{img_name:<20}{label}\n")
 
     print(f"Evaluation completed. Results saved to {RESULT_FILE}")
 
