@@ -26,8 +26,6 @@ torch.manual_seed(42)
 torch.cuda.manual_seed_all(42)
 
 
-
-# Check if required directories exist
 if not os.path.exists(TRAIN_DIR):
     raise FileNotFoundError(f"Training directory not found: {TRAIN_DIR}")
 if not os.path.exists(EVAL_DIR):
@@ -36,7 +34,7 @@ if not os.path.exists(EVAL_DIR):
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# Data Transforms
+# data transforms
 transform = transforms.Compose([
     transforms.Resize((224, 224)), 
     transforms.ToTensor(),
@@ -57,14 +55,14 @@ train_indices, val_indices = train_test_split(
     random_state=42  
 )
 
-# Subset datasets
+# subset datasets
 train_dataset = torch.utils.data.Subset(train_data, train_indices)
 val_dataset = torch.utils.data.Subset(train_data, val_indices)
 
 train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False)
 
-# Load Evaluation Dataset
+# load evaluation dataset
 def load_eval_images(eval_dir):
     return [os.path.join(eval_dir, fname) for fname in os.listdir(eval_dir) if fname.lower().endswith(('.png', '.jpg', '.jpeg'))]
 
@@ -87,16 +85,16 @@ class EvalDataset(torch.utils.data.Dataset):
 eval_dataset = EvalDataset(eval_image_paths, transform)
 eval_loader = DataLoader(eval_dataset, batch_size=1, shuffle=False)
 
-# Model: ResNet18
+# model: ResNet18
 model = models.resnet18(weights=ResNet18_Weights.DEFAULT)
 model.fc = nn.Linear(model.fc.in_features, 2)
 model = model.to(device)
 
-# Loss and Optimizer
+# loss and optimizer
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
-# Training Function
+# training function
 def train_model(epochs):
     model.train()
     for epoch in range(epochs):
@@ -115,7 +113,7 @@ def train_model(epochs):
 
         print(f"Epoch {epoch+1}/{epochs}, Loss: {running_loss/len(train_loader):.4f}")
 
-# Validation Function
+# validation function
 def validate_model():
     model.eval()
     val_labels = []
@@ -137,17 +135,17 @@ def validate_model():
     print("True labels:", val_labels)
     print("Predicted labels:", val_preds)
 
-    # Calculate the basic F1 score
+    # calculate f1 score
     val_f1 = f1_score(val_labels, val_preds)
     print(f"Validation F1 Score (basic): {val_f1 * 100:.4f}%")
 
-    # Weighted F1 score
+    # weighted f1 score
     val_f1_weighted = f1_score(val_labels, val_preds, average='weighted')
     print(f"Validation Weighted F1 Score: {val_f1_weighted:.4f}")
 
     return val_f1
 
-# Evaluation Function
+# evaluation function
 def evaluate_model():
     model.eval()
     with open(RESULT_FILE, 'w') as f:
@@ -163,7 +161,7 @@ def evaluate_model():
 
     print(f"Evaluation completed. Results saved to {RESULT_FILE}")
 
-# Main Execution
+# main execution
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="COVID-19 X-Ray Classifier")
     parser.add_argument('--epochs', type=int, default=10, help='Number of training epochs')
