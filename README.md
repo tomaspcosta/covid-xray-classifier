@@ -5,7 +5,6 @@
 1.  [Project Description](#project-description)
 2.  [Technologies Used](#technologies-used)
 3.  [Installing Requirements](#installing-requirements)
-4.  [Features](#features)
 
 ##   1. Project Description
 
