@@ -16,7 +16,7 @@ A Python-based deep learning application that classifies chest X-ray images as *
 * [PyTorch](https://pytorch.org/) (deep learning framework)
 * [Torchvision](https://pytorch.org/vision/) (for pre-trained models and image datasets)
 * [scikit-learn](https://scikit-learn.org/) (for calculating metrics like F1 score)
-* Pillow for image loading and processing
+* Pillow (for image loading and processing)
 * [NumPy](https://numpy.org/) (for numerical operations)
 
 ##   3. Installing Requirements
